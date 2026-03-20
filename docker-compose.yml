@@ -1,0 +1,213 @@
+#services:
+#
+#  mysql:
+#    image: mysql:8.0
+#    container_name: mysql
+#    environment:
+#      MYSQL_ROOT_PASSWORD: root
+#      MYSQL_DATABASE: MicroServiceTaskDemo
+#    ports:
+#      - "3307:3306"
+#    networks:
+#      - microservice-network
+#    healthcheck:
+#      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+#      interval: 10s
+#      timeout: 5s
+#      retries: 5
+#
+#  eureka-server:
+#    build: "./Eureka_Service"
+#    container_name: eureka-server
+#    ports:
+#      - "8761:8761"
+#    networks:
+#      - microservice-network
+#    healthcheck:
+#      test: ["CMD", "wget", "-qO-", "http://localhost:8761/actuator/health"]
+#      interval: 10s
+#      timeout: 5s
+#      retries: 5
+#    restart: always
+#
+#  api-gateway:
+#    build: "./Api_Gateway"
+#    container_name: api-gateway
+#    ports:
+#      - "8080:8080"
+#    depends_on:
+#      eureka-server:
+#        condition: service_healthy
+#    networks:
+#      - microservice-network
+#    restart: always
+#
+#  product-service:
+#    build: "./Product_Service"
+#    container_name: product-service
+#    ports:
+#      - "8081:8081"
+#    depends_on:
+#      eureka-server:
+#        condition: service_healthy
+#      mysql:
+#        condition: service_healthy
+#    networks:
+#      - microservice-network
+#    restart: always
+#
+#  inventory-service:
+#    build: "./Inventory_Service"
+#    container_name: inventory-service
+#    ports:
+#      - "8082:8082"
+#    depends_on:
+#      eureka-server:
+#        condition: service_healthy
+#      mysql:
+#        condition: service_healthy
+#    networks:
+#      - microservice-network
+#    restart: always
+#
+#  order-service:
+#    build: "./Order_Service"
+#    container_name: order-service
+#    ports:
+#      - "8083:8083"
+#    depends_on:
+#      eureka-server:
+#        condition: service_healthy
+#      mysql:
+#        condition: service_healthy
+#    networks:
+#      - microservice-network
+#    restart: always
+#
+#  payment-service:
+#    build: "./Payment_Service"
+#    container_name: payment-service
+#    ports:
+#      - "8084:8084"
+#    depends_on:
+#      eureka-server:
+#        condition: service_healthy
+#      mysql:
+#        condition: service_healthy
+#    networks:
+#      - microservice-network
+#    restart: always
+#
+#networks:
+#  microservice-network:
+#    driver: bridge
+
+services:
+
+  mysql:
+    image: mysql:8.0
+    container_name: mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: MicroServiceTaskDemo
+    ports:
+      - "3307:3306"
+    networks:
+      - microservice-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 30s
+    restart: always
+
+  eureka-server:
+    build: "./Eureka_Service"
+    container_name: eureka-server
+    ports:
+      - "8761:8761"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - microservice-network
+    healthcheck:
+      test: [ "CMD-SHELL", "wget -qO- http://localhost:8761/actuator/health || exit 1" ]
+      interval: 10s
+      timeout: 10s
+      retries: 20
+      start_period: 120s
+    restart: always
+
+  api-gateway:
+    build: "./Api_Gateway"
+    container_name: api-gateway
+    ports:
+      - "8080:8080"
+    depends_on:
+      eureka-server:
+        condition: service_healthy
+    networks:
+      - microservice-network
+    restart: always
+
+  product-service:
+    build: "./Product_Service"
+    container_name: product-service
+    ports:
+      - "8081:8081"
+    depends_on:
+      eureka-server:
+        condition: service_healthy
+      mysql:
+        condition: service_healthy
+    networks:
+      - microservice-network
+    restart: always
+
+  inventory-service:
+    build: "./Inventory_Service"
+    container_name: inventory-service
+    ports:
+      - "8082:8082"
+    depends_on:
+      eureka-server:
+        condition: service_healthy
+      mysql:
+        condition: service_healthy
+    networks:
+      - microservice-network
+    restart: always
+
+  order-service:
+    build: "./Order_Service"
+    container_name: order-service
+    ports:
+      - "8083:8083"
+    depends_on:
+      eureka-server:
+        condition: service_healthy
+      mysql:
+        condition: service_healthy
+    networks:
+      - microservice-network
+    restart: always
+
+  payment-service:
+    build: "./Payment_Service"
+    container_name: payment-service
+    ports:
+      - "8084:8084"
+    depends_on:
+      eureka-server:
+        condition: service_healthy
+      mysql:
+        condition: service_healthy
+    networks:
+      - microservice-network
+    restart: always
+
+networks:
+  microservice-network:
+    driver: bridge
